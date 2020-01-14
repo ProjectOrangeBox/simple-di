@@ -28,7 +28,3 @@ $di = di::reference();
 var_dump($di->get('d')->get('name'));
 
 var_dump(di::reference());
-var_dump(di::reference());
-var_dump(di::reference());
-var_dump(di::reference());
-var_dump(di::reference());
