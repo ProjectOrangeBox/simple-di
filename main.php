@@ -1,30 +1,61 @@
 <?php
 
-require 'di.php';
-require 'classA.php';
-require 'classB.php';
-require 'config.php';
+/* register a simple autoload loader for the example */
+spl_autoload_register(function ($class) {
+	include __DIR__ . '/classes/' . $class . '.php';
+});
 
-di::factory('a', 'classA');
-di::singleton('b', 'classB');
-di::singleton('c', 'config');
-di::alias('c', 'd');
+/* register config service */
+di::register('config', function () {
+	return new config;
+}, true);
 
-/* test */
-di::get('c')->set('name', 'Don Myers');
+/* register page service this should be a new instance each time it's requested */
+di::register('page', function () {
+	return new page(di::get('config')->collect());
+}, false);
 
-di::get('b')->set('Pizza');
+/* register a input and output service */
+di::register('input', function () {
+	return new input(di::get('config')->collect());
+}, true);
 
-var_dump(di::get('c')->get('name'));
-var_dump(di::get('b')->get());
+di::register('output', function () {
+	return new output(di::get('config')->collect());
+}, true);
 
-di::get('b')->set('Cookies');
+$config = di::get('config');
 
-var_dump(di::get('b')->get());
-var_dump(di::get('d')->get('name'));
+$config->set('name', 'Don Myers');
+$config->set('age', 21);
 
-$di = di::reference();
+$input = di::get('input');
 
-var_dump($di->get('d')->get('name'));
+$input->show('$input');
 
-var_dump(di::reference());
+$input->set('food', 'Pizza');
+
+$input->show('$input');
+
+$input2 = di::get('input');
+
+$input2->show('$input2');
+
+di::register('chow', function () {
+	return ['name' => 'just an array', 'pet' => 'dog'];
+});
+
+var_dump('chow returns an array', di::get('chow'));
+
+$page1 = di::get('page');
+
+$page1->set('title', 'this is the title');
+
+$page2 = di::get('page');
+
+$page2->set('title', 'this is the title of page 2');
+
+$page1->show('$page1');
+$page2->show('$page2');
+
+//var_dump(di::debug());
