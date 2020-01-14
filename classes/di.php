@@ -7,7 +7,16 @@ class di
 	 *
 	 * @var array
 	 */
-	protected static $registeredServices = [];
+	protected $registeredServices = [];
+
+	public function __construct(array $serviceArray = null)
+	{
+		if ($serviceArray) {
+			foreach ($serviceArray as $serviceName => $closureSingleton) {
+				$this->register($serviceName, $closureSingleton[0], $closureSingleton[1]);
+			}
+		}
+	}
 
 	/**
 	 * Register a new service as a singleton or factory
@@ -17,9 +26,24 @@ class di
 	 * @param bool $singleton
 	 * @return void
 	 */
-	public static function register(string $serviceName, closure $closure, bool $singleton = false): void
+	public function register(string $serviceName, closure $closure, bool $singleton = false): void
 	{
-		self::$registeredServices[strtolower($serviceName)] = ['closure' => $closure, 'singleton' => $singleton, 'reference' => null];
+		$this->registeredServices[strtolower($serviceName)] = ['closure' => $closure, 'singleton' => $singleton, 'reference' => null];
+	}
+
+	public function __get($name)
+	{
+		return $this->get($name);
+	}
+
+	public function __isset($name)
+	{
+		return $this->has($name);
+	}
+
+	public function __set($name, $value)
+	{
+		$this->register($name, $value[0], $value[1]);
 	}
 
 	/**
@@ -28,9 +52,9 @@ class di
 	 * @param string $serviceName
 	 * @return bool
 	 */
-	public static function has(string $serviceName): bool
+	public function has(string $serviceName): bool
 	{
-		return isset(self::$registeredServices[strtolower($serviceName)]);
+		return isset($this->registeredServices[strtolower($serviceName)]);
 	}
 
 	/**
@@ -39,18 +63,18 @@ class di
 	 * @param string $serviceName
 	 * @return mixed
 	 */
-	public static function get(string $serviceName)
+	public function get(string $serviceName)
 	{
 		$serviceName = strtolower($serviceName);
 
 		/* Is this service even registered? */
-		if (!isset(self::$registeredServices[$serviceName])) {
+		if (!isset($this->registeredServices[$serviceName])) {
 			/* fatal */
 			throw new \Exception($serviceName . ' service not registered.');
 		}
 
 		/* Is this a singleton or factory? */
-		return (self::$registeredServices[$serviceName]['singleton']) ? self::singleton($serviceName) : self::make($serviceName);
+		return ($this->registeredServices[$serviceName]['singleton']) ? self::singleton($serviceName) : self::make($serviceName);
 	}
 
 	/**
@@ -59,9 +83,9 @@ class di
 	 * @param string $serviceName
 	 * @return mixed
 	 */
-	protected static function singleton(string $serviceName)
+	protected function singleton(string $serviceName)
 	{
-		return self::$registeredServices[$serviceName]['reference'] ?? self::$registeredServices[$serviceName]['reference'] = self::make($serviceName);
+		return $this->registeredServices[$serviceName]['reference'] ?? $this->registeredServices[$serviceName]['reference'] = self::make($serviceName);
 	}
 
 	/**
@@ -70,9 +94,9 @@ class di
 	 * @param string $serviceName
 	 * @return mixed
 	 */
-	protected static function make(string $serviceName)
+	protected function make(string $serviceName)
 	{
-		return self::$registeredServices[$serviceName]['closure']();
+		return $this->registeredServices[$serviceName]['closure']($this);
 	}
 
 	/**
@@ -80,12 +104,12 @@ class di
 	 *
 	 * @return array
 	 */
-	public static function debug(): array
+	public function debug(): array
 	{
 		$debug = [];
 
-		foreach (self::$registeredServices as $key => $record) {
-			$debug[$key] = ['singleton' => ($record['singleton']), 'attached' => isset(self::$registeredServices[$key]['reference'])];
+		foreach ($this->registeredServices as $key => $record) {
+			$debug[$key] = ['singleton' => $record['singleton'], 'attached' => isset($this->registeredServices[$key]['reference'])];
 		}
 
 		return $debug;
