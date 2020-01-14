@@ -50,7 +50,7 @@ class di
 		}
 
 		/* Is this a singleton or factory? */
-		return (self::$registeredServices[$serviceName]['singleton']) ? self::getSingleton($serviceName) : self::getFactory($serviceName);
+		return (self::$registeredServices[$serviceName]['singleton']) ? self::singleton($serviceName) : self::make($serviceName);
 	}
 
 	/**
@@ -59,18 +59,18 @@ class di
 	 * @param string $serviceName
 	 * @return mixed
 	 */
-	protected static function getSingleton(string $serviceName)
+	protected static function singleton(string $serviceName)
 	{
-		return self::$registeredServices[$serviceName]['reference'] ?? self::$registeredServices[$serviceName]['reference'] = self::getFactory($serviceName);
+		return self::$registeredServices[$serviceName]['reference'] ?? self::$registeredServices[$serviceName]['reference'] = self::make($serviceName);
 	}
 
 	/**
-	 * Get another instance of a service
+	 * Get instance of a service
 	 *
 	 * @param string $serviceName
 	 * @return mixed
 	 */
-	protected static function getFactory(string $serviceName)
+	protected static function make(string $serviceName)
 	{
 		return self::$registeredServices[$serviceName]['closure']();
 	}

@@ -21,7 +21,7 @@ di::register('input', function () {
 }, true);
 
 di::register('output', function () {
-	return new output(di::get('config')->collect());
+	return new output(di::get('config')->collect(), di::get('input'));
 }, true);
 
 $config = di::get('config');
@@ -57,5 +57,9 @@ $page2->set('title', 'this is the title of page 2');
 
 $page1->show('$page1');
 $page2->show('$page2');
+
+$output = di::get('output');
+
+$output->input->show('$output->input');
 
 //var_dump(di::debug());
