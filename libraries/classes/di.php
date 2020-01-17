@@ -9,6 +9,12 @@ class di
 	 */
 	protected $registeredServices = [];
 
+	/**
+	 * __construct
+	 *
+	 * @param mixed array (optional)
+	 * @return di
+	 */
 	public function __construct(array $serviceArray = null)
 	{
 		if ($serviceArray) {
@@ -19,42 +25,43 @@ class di
 	}
 
 	/**
-	 * Register a new service as a singleton or factory
+	 * __get
 	 *
-	 * @param string $serviceName
-	 * @param closure $closure
-	 * @param bool $singleton
-	 * @return void
+	 * see get(...)
+	 *
+	 * @param mixed $serviceName
+	 * @return mixed
 	 */
-	public function register(string $serviceName, closure $closure, bool $singleton = false): void
+	public function __get($serviceName)
 	{
-		$this->registeredServices[strtolower($serviceName)] = ['closure' => $closure, 'singleton' => $singleton, 'reference' => null];
-	}
-
-	public function __get($name)
-	{
-		return $this->get($name);
-	}
-
-	public function __isset($name)
-	{
-		return $this->has($name);
-	}
-
-	public function __set($name, $value)
-	{
-		$this->register($name, $value[0], $value[1]);
+		return $this->get($serviceName);
 	}
 
 	/**
-	 * Check whether the Service been registered
+	 * __isset
 	 *
-	 * @param string $serviceName
+	 * see has(...)
+	 *
+	 * @param mixed $serviceName
 	 * @return bool
 	 */
-	public function has(string $serviceName): bool
+	public function __isset($serviceName): bool
 	{
-		return isset($this->registeredServices[strtolower($serviceName)]);
+		return $this->has($serviceName);
+	}
+
+	/**
+	 * __set
+	 *
+	 * see regsiter(...)
+	 *
+	 * @param mixed $serviceName
+	 * @param mixed $value
+	 * @return void
+	 */
+	public function __set($serviceName, $value): void
+	{
+		$this->register($serviceName, $value[0], $value[1]);
 	}
 
 	/**
@@ -78,6 +85,31 @@ class di
 	}
 
 	/**
+	 * Check whether the Service been registered
+	 *
+	 * @param string $serviceName
+	 * @return bool
+	 */
+	public function has(string $serviceName): bool
+	{
+		return isset($this->registeredServices[strtolower($serviceName)]);
+	}
+
+
+	/**
+	 * Register a new service as a singleton or factory
+	 *
+	 * @param string $serviceName Service Name
+	 * @param closure $closure closure to call in order to instancate it.
+	 * @param bool $singleton should this be a singleton or factory
+	 * @return void
+	 */
+	public function register(string $serviceName, closure $closure, bool $singleton = false): void
+	{
+		$this->registeredServices[strtolower($serviceName)] = ['closure' => $closure, 'singleton' => $singleton, 'reference' => null];
+	}
+
+	/**
 	 * Get the same instance of a service
 	 *
 	 * @param string $serviceName
@@ -89,7 +121,7 @@ class di
 	}
 
 	/**
-	 * Get instance of a service
+	 * Get new instance of a service
 	 *
 	 * @param string $serviceName
 	 * @return mixed

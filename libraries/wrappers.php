@@ -6,13 +6,9 @@ if (!function_exists('di')) {
 		static $di;
 
 		if (!$di) {
-			if (!is_array($serviceName)) {
-				throw new Exception('Please provide the services configuration before using the dependency injector.');
-			} else {
-				$di = new di($serviceName);
+			$di = (is_array($serviceName)) ? new di($serviceName) : new di;
 
-				$serviceName = null;
-			}
+			$serviceName = null;
 		}
 
 		return ($serviceName) ? $di->get($serviceName) : $di;
