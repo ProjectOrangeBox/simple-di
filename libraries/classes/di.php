@@ -74,7 +74,7 @@ class di
 		}
 
 		/* Is this a singleton or factory? */
-		return ($this->registeredServices[$serviceName]['singleton']) ? self::singleton($serviceName) : self::make($serviceName);
+		return ($this->registeredServices[$serviceName]['singleton']) ? self::singleton($serviceName) : self::factory($serviceName);
 	}
 
 	/**
@@ -85,7 +85,7 @@ class di
 	 */
 	protected function singleton(string $serviceName)
 	{
-		return $this->registeredServices[$serviceName]['reference'] ?? $this->registeredServices[$serviceName]['reference'] = self::make($serviceName);
+		return $this->registeredServices[$serviceName]['reference'] ?? $this->registeredServices[$serviceName]['reference'] = self::factory($serviceName);
 	}
 
 	/**
@@ -94,7 +94,7 @@ class di
 	 * @param string $serviceName
 	 * @return mixed
 	 */
-	protected function make(string $serviceName)
+	protected function factory(string $serviceName)
 	{
 		return $this->registeredServices[$serviceName]['closure']($this);
 	}
